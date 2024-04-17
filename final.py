@@ -7,7 +7,7 @@ import pywhatkit as kit
 import time
 from datetime import timedelta
 import datetime
-import pyautogui
+# import pyautogui
 import sqlite3
 common=None
 dic = []
@@ -1604,8 +1604,8 @@ def delete():
             close_button_x = 1900
             close_button_y = 25
 
-            pyautogui.moveTo(close_button_x, close_button_y)
-            pyautogui.click()
+            # pyautogui.moveTo(close_button_x, close_button_y)
+            # pyautogui.click()
 
             # Add a delay between messages to avoid rate limits (optional)
 
