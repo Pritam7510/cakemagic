@@ -3,11 +3,11 @@ import random
 import string
 import hashlib
 import sqlite3
-# import pywhatkit as kit
+import pywhatkit as kit
 import time
 from datetime import timedelta
 import datetime
-# import pyautogui
+import pyautogui
 import sqlite3
 common=None
 dic = []
@@ -1593,7 +1593,7 @@ def delete():
         for phone in phone_numbers:
             p = str(phone)
             final = '+91' + p
-            # kit.sendwhatmsg(final, message, hour, minute)
+            kit.sendwhatmsg(final, message, hour, minute)
             # Get the current date and time
             current_time = datetime.datetime.now()
             # Extract the hour and minute separately
@@ -1604,8 +1604,8 @@ def delete():
             close_button_x = 1900
             close_button_y = 25
 
-            # pyautogui.moveTo(close_button_x, close_button_y)
-            # pyautogui.click()
+            pyautogui.moveTo(close_button_x, close_button_y)
+            pyautogui.click()
 
             # Add a delay between messages to avoid rate limits (optional)
 
