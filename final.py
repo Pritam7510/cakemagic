@@ -3,7 +3,7 @@ import random
 import string
 import hashlib
 import sqlite3
-import pywhatkit as kit
+# import pywhatkit as kit
 import time
 from datetime import timedelta
 import datetime
@@ -1593,7 +1593,7 @@ def delete():
         for phone in phone_numbers:
             p = str(phone)
             final = '+91' + p
-            kit.sendwhatmsg(final, message, hour, minute)
+            # kit.sendwhatmsg(final, message, hour, minute)
             # Get the current date and time
             current_time = datetime.datetime.now()
             # Extract the hour and minute separately
