@@ -3,7 +3,6 @@ import random
 import string
 import hashlib
 import sqlite3
-import os
 import pywhatkit as kit
 import time
 from datetime import timedelta
