@@ -30,6 +30,55 @@ number=None
 cake=None
 amount=None
 
+con = sqlite3.connect("arya_cakes_magic")
+query = "CREATE TABLE [order] (
+    customer  VARCHAR (35),
+    email     VARCHAR (40),
+    number    VARCHAR (10),
+    location  VARCHAR (100),
+    cake      VARCHAR,
+    orderdate VARCHAR (12),
+    weight    INTEGER (5),
+    amount    VARCHAR (5),
+    image     BLOB,
+    status    VARCHAR (50),
+    payment   VARCHAR (15) 
+);"
+output=con.execute(query)
+con.commit()
+con.close
+
+con = sqlite3.connect("arya_cakes_magic")
+query = "CREATE TABLE customer (
+    email  VARCHAR (30) PRIMARY KEY
+                        NOT NULL
+                        UNIQUE,
+    passwd VARCHAR (20) NOT NULL,
+    phone  NUMERIC (10) NOT NULL,
+    dob    VARCHAR (8)  NOT NULL,
+    age    NUMERIC (3)  NOT NULL
+);"
+output=con.execute(query)
+con.commit()
+con.close
+
+con = sqlite3.connect("arya_cakes_magic")
+query = "CREATE TABLE accept (
+    customer  VARCHAR (50),
+    email     VARCHAR (40),
+    number    VARCHAR (10),
+    location  VARCHAR (100),
+    cake      VARCHAR (50),
+    orderdate VARCHAR (10),
+    weight    VARCHAR,
+    amount    VARCHAR,
+    payment   VARCHAR (50) 
+);"
+output=con.execute(query)
+con.commit()
+con.close
+
+
 @route('/orders')
 def orders():
 
