@@ -3,17 +3,22 @@ import random
 import string
 import hashlib
 import sqlite3
+import os
+k=(-1)
 import pywhatkit as kit
 import time
 from datetime import timedelta
 import datetime
 import pyautogui
 import sqlite3
+mode=None
 common=None
 dic = []
+info=[]
 weight=None
 sr=None
 i=0
+demo=None
 image=None
 email=None
 value=None
@@ -24,10 +29,14 @@ location=None
 number=None
 cake=None
 amount=None
+
 @route('/orders')
 def orders():
 
     return template('owner_login',dic=dic)
+@route('/accept')
+def accept():
+    return template('accept',accept=accept)
 @route('/products')
 def products():
     return template('products')
@@ -50,6 +59,7 @@ def place():
 @route('/occassion')
 def occasion():
     return template('occassion')
+
 
 @route('/place')
 def plac():
@@ -219,7 +229,6 @@ def hbuy():
         cake = name
         image_source = "https://www.fnp.com/images/pr/l/v20200901172412/sweet-cat-design-cake-chocolate-1-kg_1.jpg"
         return template('buy', source=image_source,prize=data,name=name)
-
     elif buttons== 'b13':
         name = "Dark Chocolate Pastry"
         data = "₹70"
@@ -228,7 +237,6 @@ def hbuy():
         return template('buy', source=image_source,prize=data,name=name)
     elif buttons== 'b14':
         name = "Butterscotch Pastry"
-
         data = "₹35"
         cake = name
         image_source = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRW_B-cVqIsMCLzIPNexxGMIiRrUlnp8wYIoA&usqp=CAU"
@@ -1472,6 +1480,8 @@ def conform():
         global amount
         global image
         global common
+        global demo
+        global mode
         data1 = request.forms.get('name')
         data4 = request.forms.get('od')
         data5 = request.forms.get('address')
@@ -1498,10 +1508,11 @@ def conform():
 
 
         if data6=='bt2':
+            mode="cash"
             common=cake
             con = sqlite3.connect("arya_cakes_magic")
-            query = "INSERT INTO `order` (customer, email, number, location, cake, orderdate, weight, amount,image) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)"
-            values = (customer, email, number, location, cake, date, weight, amount,image)
+            query = "INSERT INTO `order` (customer, email, number, location, cake, orderdate, weight, amount,image,payment) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            values = (customer, email, number, location, cake, date, weight, amount,image,mode)
             con.execute(query, values)
             con.commit()
             con.close()
@@ -1512,14 +1523,16 @@ def conform():
                 ch ="none"
             else:
                 ch="image"
-            new_row = {'sr':i, 'customer':customer, 'email': email, 'number': number, 'location': location, 'cake': cake, 'date': date, 'weight': weight, 'amount': '1', 'image':ch}
+                demo=email
+            new_row = {'sr':i, 'customer':customer, 'email': email, 'number': number, 'location': location, 'cake': cake, 'date': date, 'weight': weight, 'amount': '1', 'image':ch, 'payment':mode}
             dic.append(new_row)
             image=None
             return thank()
         if data6 == 'bt1':
+            mode="online"
             con = sqlite3.connect("arya_cakes_magic")
-            query = "INSERT INTO `order` (customer, email, number, location, cake, orderdate, weight, amount,image) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)"
-            values = (customer, email, number, location, cake, date, weight, amount, image)
+            query = "INSERT INTO `order` (customer, email, number, location, cake, orderdate, weight, amount,image,payment) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?,?)"
+            values = (customer, email, number, location, cake, date, weight, amount, image,mode)
             con.execute(query, values)
 
             con.commit()
@@ -1532,16 +1545,18 @@ def conform():
             else:
                 ch = "image"
             new_row = {'sr': i, 'customer': customer, 'email': email, 'number': number, 'location': location,
-                       'cake': cake, 'date': date, 'weight': weight, 'amount': '1', 'image': ch}
+                       'cake': cake, 'date': date, 'weight': weight, 'amount': '1', 'image': ch,'payment':mode}
             dic.append(new_row)
             image = None
             return online()
     except:
         return buy()
 
+
+
 @route('/ownertable',method='post')
 def delete():
-
+    global accept
     data1 = request.forms.get('delete')
     if data1=="1":
         global dic,i
@@ -1611,6 +1626,15 @@ def delete():
 
             time.sleep(5)
         return '<h1>Notification Send Sucessfully</h1>'
+    if data1=="3":
+        con = sqlite3.connect("arya_cakes_magic")
+        mycur = con.cursor()
+        query = "select * from accept"
+        mycur.execute(query)
+        user = mycur.fetchall()
+        con.commit()
+        con.close()
+        return template('accept',accept=user)
 
 @route('/thank',method='post')
 def you():
@@ -1635,7 +1659,7 @@ def page():
         if data2=="kanad0207" and data1=="dandnaikmukta511@gmail.com":
 
             return orders()
-        else:
+        elif cake!=None:
             con = sqlite3.connect("arya_cakes_magic")
             mycur = con.cursor()
             query = "select passwd from customer where email='" + d1 + "';"
@@ -1643,7 +1667,6 @@ def page():
             output=mycur.fetchone()
             output=str(output[0])
             print(output)
-
             con.commit()
             con.close()
             if output == data2:
@@ -1652,6 +1675,8 @@ def page():
             else:
                 s='incorrect password'
                 return template('logpage', message=s)
+        else:
+            return cakes()
 
     except:
         return template('logpage', message="Something Went Wrong ")
@@ -1659,33 +1684,117 @@ def page():
 def page():
     return template('firstlogin')
 
-
 @route('/table', method='post')
 def table():
+    try:
         global cake
         global weight
-
-        global dic,i
+        global email
+        global dic,i,k
+        global email
+        global demo,mode
         data6 = request.forms.get('status')
 
         if data6=='accept':
+
             con = sqlite3.connect("arya_cakes_magic")
-            query = "INSERT INTO `accept` (customer, email, location, cake, orderdate, weight, amount) VALUES (?, ?, ?, ?, ?, ?, ?)"
-            values = (customer, email, location, cake, date, weight, str(amount))
+            query = "INSERT INTO `accept` (customer, email, location, cake, orderdate, amount,payment) VALUES (?, ?, ?, ?, ?, ?,?)"
+            values = (customer, demo, location, common, date, str(amount),mode)
             con.execute(query, values)
             con.commit()
-            dic.pop(0)
+
+            current_time = datetime.datetime.now()
+            # Extract the hour and minute separately
+            current_hour = current_time.hour
+            current_minute = current_time.minute
+
+            message = 'Your order is  accepted by Arya Cakes Magic'
+            con = sqlite3.connect("arya_cakes_magic")
+            mycur = con.cursor()
+            query = "select phone from customer where email ='" + str(demo) + "'"
+            mycur.execute(query)
+            output = mycur.fetchall()
+            con.commit()
             con.close()
-            return orders()
+            phone_numbers = [i[0] for i in output]
+            hour = current_hour
+            minute = current_minute + 1
+
+            # Loop through each phone number and send the message
+            for phone in phone_numbers:
+                p = str(phone)
+                final = '+91' + p
+                kit.sendwhatmsg(final, message, hour, minute)
+                # Get the current date and time
+                current_time = datetime.datetime.now()
+                # Extract the hour and minute separately
+                current_hour = current_time.hour
+                current_minute = current_time.minute
+                minute = current_minute + 1
+                time.sleep(20)
+                close_button_x = 1900
+                close_button_y = 25
+
+                pyautogui.moveTo(close_button_x, close_button_y)
+                pyautogui.click()
+
+                # Add a delay between messages to avoid rate limits (optional)
+
+                time.sleep(5)
+            k = k + 1
+            dic.pop(0)
+
+            return template('owner_login')
         if data6=='reject':
             con = sqlite3.connect("arya_cakes_magic")
             query = "INSERT INTO `reject` (customer, email, location, cake, orderdate, amount) VALUES (?, ?, ?, ?, ?, ?)"
-            values = (customer, email, location, common, date, str(amount))
+            values = (customer, demo, location, common, date, str(amount))
             con.execute(query, values)
             con.commit()
-            dic.pop(0)
-            return orders()
+            con.close()
+            current_time = datetime.datetime.now()
+            # Extract the hour and minute separately
+            current_hour = current_time.hour
+            current_minute = current_time.minute
+            message = 'Your order is  Rejected by Arya Cakes Magic'
+            con = sqlite3.connect("arya_cakes_magic")
+            mycur = con.cursor()
+            query = "select phone from customer where email ='" + str(demo) + "'"
+            mycur.execute(query)
+            output = mycur.fetchall()
+            con.commit()
+            con.close()
+            phone_numbers = [i[0] for i in output]
+            hour = current_hour
+            minute = current_minute + 1
 
+            # Loop through each phone number and send the message
+            for phone in phone_numbers:
+                p = str(phone)
+                final = '+91' + p
+                kit.sendwhatmsg(final, message, hour, minute)
+                # Get the current date and time
+                current_time = datetime.datetime.now()
+                # Extract the hour and minute separately
+                current_hour = current_time.hour
+                current_minute = current_time.minute
+                minute = current_minute + 1
+                time.sleep(20)
+                close_button_x = 1900
+                close_button_y = 25
+
+                pyautogui.moveTo(close_button_x, close_button_y)
+                pyautogui.click()
+
+                # Add a delay between messages to avoid rate limits (optional)
+
+                time.sleep(5)
+            k=k+1
+            dic.pop(0)
+            return template('owner_login')
+    except:
+        k=0
+        return orders()
 
 
 run(debug=True, reloader=True,host='localhost',port=8080)
